@@ -122,9 +122,9 @@ Um Speicher zu sparen wird $SA$ allerdings nicht als Folge der Suffix-Zeichenket
 \begin{align*}
 	\Sigma &:= \text{streng total geordnetes endliches Alphabet} \\
 	S &:= \text{Eingabezeichenkette} = (S[1], \dots, S[n]) \in \Sigma^n, |S| := n \in \mathbb{N} \\
-	S[i .. j + 1) = S[i .. j] &:= (S[i], \dots, S[j]) \\
-	S_i &:= S[i .. n] \\
-	S \sqsubseteq T &:\Leftrightarrow S = T[1 .. |S|] \\
+	S[i .. j + 1) := S[i .. j] &:= (S[i], \dots, S[j]) \\
+	S_i &:= \text{$i$-ter Suffix von $S$} = S[i .. n] \\
+	S \sqsubseteq T &:\Leftrightarrow \text{$S$ ist Präfix von $T$} \Leftrightarrow S = T[1 .. |S|] \\
 	S <_{lex} T &:\Leftrightarrow (\exists\ i: S[i] < T[i] \land S[1 .. i) = T[1 .. i)) \lor (|S| < |T| \land S \sqsubseteq T) \\
 	SA &:= \text{Permutation von } \{1, \dots, |S|\} \text{, sodass } \forall\ i < j: S_{SA[i]} <_{lex} S_{SA[j]}
 \end{align*}
@@ -154,7 +154,7 @@ Da es sich bei der Suffix-Array-Berechnung im Wesentlichen um ein Sortierproblem
 
 Es sind bereits zahlreiche Linearzeitalgorithmen zur Konstruktion von Suffix-Arrays bekannt. Allerdings sind all diese Verfahren rekursiv. Das bedeutet, dass sie neben der Eingabe und evtl. Hilfsdatenstrukturen zudem mindestens $\mathcal{O}(\log n)$ Speicher für die Stackframes der rekursiven Aufrufe benötigen.\\
 
-Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SA-IS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SA-IS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bekannten SACAs (suffix array construction algorithms).\\
+Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SA-IS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SA-IS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bekannten SACAs (suffix array construction algorithms). Obwohl es sich bei beiden um Linearzeitalgorithmen handelt, sind die konstanten Faktoren in Implementationen von SA-IS deutlich geringer.
 
 \begin{table}[h]
 \begin{center}
@@ -171,21 +171,67 @@ Speicher & $\mathcal{O}(\log n) + \max 24n$ & $\mathcal{O}(\log n) + \max 2n$ & 
 \end{center}
 \end{table}
 
-Im Rest dieser Arbeit wird es um den GSACA-Algorithmus gehen, welcher der erste bekannte rekursionsfreie Linearzeit-SACA ist. Skew und SA-IS werden dabei als Referenzalgorithmen dienen, mit denen GSACA verglichen wird.
-
 \section{Der GSACA-Algorithmus}
 
-\subsection{Grundidee}
+Im Rest dieser Arbeit wird es um den GSACA-Algorithmus (greedy suffix array construction algorithm) gehen, welcher der erste bekannte rekursionsfreie Linearzeit-SACA ist. Skew und SA-IS werden dabei als Referenzalgorithmen dienen, mit denen GSACA verglichen wird.
+
+\subsection{Grundlegende Konzepte}
+
+Um den GSACA-Algorithmus zu verstehen, ist es hilfreich zuerst eine Intuition dafür zu geben, wieso Suffixe überhaupt in $\mathcal{O}(n)$ sortiert werden können. Im Gegensatz zu allgemeinen Sortierverfahren mit $\mathcal{O}(n \log n)$ Vergleichen, lassen sich hier offenbar Vergleiche sparen.
 
 \subsubsection{Induziertes Sortieren}
 
-\subsubsection{Definitionen}
+Der fundamentale Unterschied zwischen allgemeinen Sortierproblemen und der Suffixsortierung ist, dass aus der Ordnung von bestimmten Suffixen $T(1) <_{lex} \dots <_{lex} T(n)$ die Ordnung anderer Suffixe $G(1), \dots, G(n)$ induziert werden kann. Es muss dann also lediglich Zeit in Vergleiche der $T$-Suffixe investiert werden.
 
-\subsubsection{Die zwei Phasen von GSACA}
+\begin{align*}
+	T :=\ &\{ T(1), \dots, T(n) \}, \text{sodass } T(1) <_{lex} \dots <_{lex} T(n) \\
+	G :=\ &\{ G(1), \dots, G(n) \}, \text{sodass } \exists\ P \in \Sigma^*\ \forall\ i: G(i) = P\ T(i) \\
+	\implies &G(1) <_{lex} \dots <_{lex} G(n)
+\end{align*}
 
-\subsection{Phase 1}
+Um diese Implikation nutzen zu können, müssen Suffixe also mit einem geschickt gewählten Präfix $P$ einer Gruppe $G$ zugeordnet werden. GSACA tut genau das.
 
-\subsection{Phase 2}
+\subsubsection{Gruppenkontext}
+
+Für die Gruppierung von Suffixen benutzt GSACA das Konzept des \textit{Gruppenkontextes}, welcher als der gemeinsame Präfix $P$ aller Suffixe in einer Gruppe dient. Dieser Begriff wird im Folgenden näher betrachtet. Es wird dabei angenommen, dass es sich bei der Eingabe $S$ um einen \textit{nullterminierten} String handelt.
+
+\begin{align*}
+	S \text{ nullterminiert} &:\Leftrightarrow S[n] = \$ \land S[1..n) \in (\Sigma \setminus \{\$\})^*, \text{mit } \$ \in \Sigma, \forall\ \sigma \in \Sigma \setminus \{\$\}: \$ < \sigma \\
+	\text{zur Erinnerung: } S_i &:= \text{$i$-ter Suffix von $S$} = S[i .. n] \\
+	\widehat{i} &:= \min \{ j \in \{ i, \dots, n \}:\ S_j <_{lex} S_i \} \\
+	\text{Gruppenkontext von } S_i &:= S[i .. \widehat{i}) \\
+	\text{Gruppe von } S_i &:= \{ S_j:\ \text{Gruppenkontext } S_i = \text{Gruppenkontext } S_j \}
+\end{align*}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth,bb=0 0 1316 522]{./assets/groupContext.pdf}
+	\caption{Veranschaulichung des Gruppenkontextes von $S_2$ für $S =$ `parallel\$'}
+\label{fig:groupContext}
+\end{figure}
+
+Der Gruppenkontext eines Suffixes $S_i$ ist also dessen erster Präfix auf den ein lexiographisch kleinerer Suffix von $S_i$ folgt.
+
+\subsection{Die zwei Phasen von GSACA}
+
+Mit den Konzepten des induzierten Sortierens und des Gruppenkontextes zur Gruppierung von Suffixen, lässt sich GSACA nun als ein in zwei Phasen ablaufender Algorithmus verstehen. \\
+
+In der \textit{ersten Phase} werden alle Suffixe der Eingabe gemäß ihrer Gruppenkontexte in Gruppen zusammengefasst. Die resultierenden Gruppen werden dabei nach Gruppenkontext aufsteigend sortiert zurückgegeben. \\
+
+Diese sortierte Folge von Gruppen wird nun als Eingabe der \textit{zweiten Phase} verwendet. Da die Gruppen untereinander bereits nach ihrem Kontext sortiert wurden und die Kontexte jeweils Präfix der Suffixe einer Gruppe sind, müssen die Suffixe in dieser Phase lediglich innerhalb ihrer jeweiligen Gruppe geordnet werden. Für das Ordnen der Suffixe innerhalb einer Gruppe wird induziertes Sortieren genutzt.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\linewidth,bb=0 0 874 376]{./assets/twoPhases.pdf}
+	\caption{Ausgabe beider Phasen für $S =$ `parallel\$', Farben kennzeichnen Gruppen}
+\label{fig:groupContext}
+\end{figure}
+
+Das Ergebnis der zweiten Phase ist das gesuchte Suffix-Array. Ziel ist es nun beide Phasen ohne Rekursion als $\mathcal{O}(n)$-Algorithmen zu implementieren.
+
+\subsubsection{Phase 1}
+
+\subsubsection{Phase 2}
 
 
 \section{Performanceanalyse}
