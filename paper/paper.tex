@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
+\usepackage[all]{nowidow}
 \usepackage{graphicx,curves,float,rotating}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 \usepackage{latexsym,amsmath,amssymb}
@@ -48,10 +49,13 @@
 
 \newcolumntype{.}{D{.}{.}{-1}}
 
-\textwidth 15cm
+\widowpenalty 10000
+\clubpenalty 10000
+
+\textwidth 17cm
 \textheight 21.5cm
-\oddsidemargin 1cm
-\evensidemargin 0cm
+\oddsidemargin 0cm
+\evensidemargin -0.5cm
 
 % Colors:
 \definecolor{blau}{HTML}{355FB3}
@@ -103,13 +107,13 @@
 
 \section{Problemstellung}
 
-Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffix-Arrays. \\
+Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffixarrays. \\
 
-Im Folgenden wird zunächst erörtert, was Suffix-Arrays sind und wozu sie benutzt werden.
+Im Folgenden wird zunächst erörtert, was Suffixarrays sind und wozu sie benutzt werden.
 
-\subsection{Was ist ein Suffix-Array?}
+\subsection{Was ist ein Suffixarray?}
 
-Das Suffix-Array $SA$ einer Zeichenkette $S$ ist definiert als die lexiographisch aufsteigend sortierte Folge aller Suffixe von $S$.
+Das Suffixarray $SA$ einer Zeichenkette $S$ ist definiert als die lexiographisch aufsteigend sortierte Folge aller Suffixe von $S$.
 
 \begin{figure}[h]
 	\centering
@@ -129,9 +133,9 @@ Um Speicher zu sparen wird $SA$ allerdings nicht als Folge der Suffix-Zeichenket
 	SA &:= \text{Permutation von } \{1, \dots, |S|\} \text{, sodass } \forall\ i < j: S_{SA[i]} <_{lex} S_{SA[j]}
 \end{align*}
 
-\subsection{Einsatzgebiete von Suffix-Arrays}
+\subsection{Einsatzgebiete von Suffixarrays}
 
-Suffix-Arrays finden in vielen Bereichen als Index-Datenstruktur Verwendung. Ein typisches Problem, dessen Lösung durch Suffix-Arrays beschleunigt werden kann, ist z.~B. die Substringsuche. Bei dieser soll bestimmt werden, \textit{ob} und wenn ja, \textit{wo} in einem Text $T$ ein Pattern $P$ vorkommt. Ohne einen Index benötigt dieses Problem z.~B. mit Knuth-Morris-Pratt $\mathcal{O}(|T| + |P|)$. Mit einem Suffix-Array als Index über $T$ hingegen lassen sich Matches durch eine binäre Suche in $\mathcal{O}(|P| \log |T|)$ finden. Da i.~d.~R. $|P| \ll |T|$, ist dies ein deutlicher Speedup, welcher z.~B. in Datenbanksystemen für Volltextsuchen und in der Bioinformatik für das Suchen in DNA-Daten nützlich ist.
+Suffixarrays finden in vielen Bereichen als Index-Datenstruktur Verwendung. Ein typisches Problem, dessen Lösung durch Suffixarrays beschleunigt werden kann, ist z.~B. die Substringsuche. Bei dieser soll bestimmt werden, \textit{ob} und wenn ja, \textit{wo} in einem Text $T$ ein Pattern $P$ vorkommt. Ohne einen Index benötigt dieses Problem z.~B. mit Knuth-Morris-Pratt $\mathcal{O}(|T| + |P|)$. Mit einem Suffixarray als Index über $T$ hingegen lassen sich Matches durch eine binäre Suche in $\mathcal{O}(|P| \log |T|)$ finden. Da i.~d.~R. $|P| \ll |T|$, ist dies ein deutlicher Speedup, welcher z.~B. in Datenbanksystemen für Volltextsuchen und in der Bioinformatik für das Suchen in DNA-Daten nützlich ist.
 
 \begin{figure}[h]
 	\centering
@@ -140,19 +144,19 @@ Suffix-Arrays finden in vielen Bereichen als Index-Datenstruktur Verwendung. Ein
 \label{fig:substringSearch}
 \end{figure}
 
-Ein weiteres Einsatzgebiet für Suffix-Arrays ist als Suchstruktur für das Sliding Window in Implementationen des LZ77-Kompressionsalgorithmus.
+Ein weiteres Einsatzgebiet für Suffixarrays ist als Suchstruktur für das Sliding Window in Implementationen des LZ77-Kompressionsalgorithmus.
 
-\section{Ansätze zur Suffix-Array-Konstruktion}
+\section{Ansätze zur Suffixarray-Konstruktion}
 
-Nachdem nun der Begriff des Suffix-Arrays definiert wurde, wird im Folgenden betrachtet wie sich dieses prinzipiell algorithmisch berechnen lässt.
+Nachdem nun der Begriff des Suffixarrays definiert wurde, wird im Folgenden betrachtet wie sich dieses prinzipiell algorithmisch berechnen lässt.
 
 \subsection{Naiver Ansatz}
 
-Da es sich bei der Suffix-Array-Berechnung im Wesentlichen um ein Sortierproblem handelt, liegt die Idee nahe dies mit einem allgemeinen Sortierverfahren zu lösen. Dazu bietet sich z.~B. der Quicksort-Algorithmus an. Im average case wären dann $\mathcal{O}(n \log n)$ Vergleiche notwendig. Für den lexiographischen Vergleich zweier Suffixe müssen wiederum bis zu $\mathcal{O}(n)$ Zeichen miteinander verglichen werden. Insgesamt ergibt sich also eine Laufzeit von $\mathcal{O}(n^2 \log n)$. Dies ist weit von der angestrebten $\mathcal{O}(n)$-Laufzeit entfernt. Allgemeine Sortierverfahren sind daher für die Suffix-Array-Konstruktion unbrauchbar.
+Da es sich bei der Suffixarray-Berechnung im Wesentlichen um ein Sortierproblem handelt, liegt die Idee nahe dies mit einem allgemeinen Sortierverfahren zu lösen. Dazu bietet sich z.~B. der Quicksort-Algorithmus an. Im average case wären dann $\mathcal{O}(n \log n)$ Vergleiche notwendig. Für den lexiographischen Vergleich zweier Suffixe müssen wiederum bis zu $\mathcal{O}(n)$ Zeichen miteinander verglichen werden. Insgesamt ergibt sich also eine Laufzeit von $\mathcal{O}(n^2 \log n)$. Dies ist weit von der angestrebten $\mathcal{O}(n)$-Laufzeit entfernt. Allgemeine Sortierverfahren sind daher für die Suffixarray-Konstruktion unbrauchbar.
 
 \subsection{Überblick über bisherige Linearzeitansätze}
 
-Es sind bereits zahlreiche Linearzeitalgorithmen zur Konstruktion von Suffix-Arrays bekannt. Allerdings sind all diese Verfahren rekursiv. Das bedeutet, dass sie neben der Eingabe und evtl. Hilfsdatenstrukturen zudem mindestens $\mathcal{O}(\log n)$ Speicher für die Stackframes der rekursiven Aufrufe benötigen.\\
+Es sind bereits zahlreiche Linearzeitalgorithmen zur Konstruktion von Suffixarrays bekannt. Allerdings sind all diese Verfahren rekursiv. Das bedeutet, dass sie neben der Eingabe und evtl. Hilfsdatenstrukturen zudem mindestens $\mathcal{O}(\log n)$ Speicher für die Stackframes der rekursiven Aufrufe benötigen.\\
 
 Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SA-IS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SA-IS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bekannten SACAs (suffix array construction algorithms). Obwohl es sich bei beiden um Linearzeitalgorithmen handelt, sind die konstanten Faktoren in Implementationen von SA-IS deutlich geringer.
 
@@ -163,7 +167,7 @@ Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und d
 \hline
 Art & \textcolor{rot}{rekursiv} & \textcolor{rot}{rekursiv} & \textcolor{gruen}{iterativ} \\
 Zeit & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ \\
-Speicher & $\mathcal{O}(\log n) + \max 24n$ & $\mathcal{O}(\log n) + \max 2n$ & $\mathcal{O}(1)\ +\ ?$
+Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 2n$ & $\textcolor{gruen}{\mathcal{O}(1)}\ +\ ?$
 \end{tabular}
 
 \caption{Vergleich von Skew, SA-IS und GSACA}
@@ -214,11 +218,11 @@ Der Gruppenkontext eines Suffixes $S_i$ ist also dessen erster Präfix auf den e
 
 \subsection{Die zwei Phasen von GSACA}
 
-Mit den Konzepten des induzierten Sortierens und des Gruppenkontextes zur Gruppierung von Suffixen, lässt sich GSACA nun als ein in zwei Phasen ablaufender Algorithmus verstehen. \\
+Mit dem Konzept des induzierten Sortierens und dem des Gruppenkontextes zur Gruppierung von Suffixen, lässt sich GSACA nun als ein in zwei Phasen ablaufender Algorithmus verstehen. \\
 
 In der \textit{ersten Phase} werden alle Suffixe der Eingabe gemäß ihrer Gruppenkontexte in Gruppen zusammengefasst. Die resultierenden Gruppen werden dabei nach Gruppenkontext aufsteigend sortiert zurückgegeben. \\
 
-Diese sortierte Folge von Gruppen wird nun als Eingabe der \textit{zweiten Phase} verwendet. Da die Gruppen untereinander bereits nach ihrem Kontext sortiert wurden und die Kontexte jeweils Präfix der Suffixe einer Gruppe sind, müssen die Suffixe in dieser Phase lediglich innerhalb ihrer jeweiligen Gruppe geordnet werden. Für das Ordnen der Suffixe innerhalb einer Gruppe wird induziertes Sortieren genutzt.
+Diese sortierte Folge von Gruppen wird nun als Eingabe der \textit{zweiten Phase} verwendet. Da die Gruppen untereinander bereits nach ihrem Kontext sortiert wurden und ein Kontext jeweils Präfix der Suffixe seiner Gruppe ist, müssen die Suffixe in dieser Phase lediglich innerhalb ihrer jeweiligen Gruppe geordnet werden. Für das Ordnen der Suffixe innerhalb einer Gruppe wird induziertes Sortieren genutzt.
 
 \begin{figure}[h]
 	\centering
@@ -227,16 +231,87 @@ Diese sortierte Folge von Gruppen wird nun als Eingabe der \textit{zweiten Phase
 \label{fig:groupContext}
 \end{figure}
 
-Das Ergebnis der zweiten Phase ist das gesuchte Suffix-Array. Ziel ist es nun beide Phasen ohne Rekursion als $\mathcal{O}(n)$-Algorithmen zu implementieren.
+Das Ergebnis der zweiten Phase ist das gesuchte Suffixarray. Ziel ist es nun beide Phasen ohne Rekursion als $\mathcal{O}(n)$-Algorithmen zu formulieren.
 
 \subsubsection{Phase 1}
 
+\paragraph{Intuition} GSACA berechnet die Gruppen, indem jedem Suffix zu Anfang ein vorläufiger einstelliger Gruppenkontext zugewiesen wird. Diese vorläufigen Kontexte werden dann sukzessive erweitert, bis am Ende jeder Suffix den korrekten Gruppenkontext hat.\\
+
+Konkret bedeutet dies, dass der Kontext jedes Suffixes $S_i$ zu Beginn auf $S[i]$ gesetzt wird. Da das Eingabealphabet $\Sigma$ als konstant angenommen wird, können die Suffixe nun z. B. mit einem Bucketsort in $\mathcal{O}(n)$ gemäß ihres Kontextes in eine aufsteigende Folge von vorläufigen Gruppen sortiert werden.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\linewidth,bb=0 0 640 207]{./assets/bucketsort.pdf}
+	\caption{Ergebnis des Bucketsorts für $S =$ `parallel\$'}
+\label{fig:groupContext}
+\end{figure}
+
+Manche der sich ergebenden Gruppen müssen nun durch Kontexterweiterungen aufgespalten werden. Dies geschieht indem von hinten nach vorne, i.~e.\ von großem zu kleinem Kontext, über die Gruppen iteriert wird. Für jeden Suffix der aktuell iterierten Gruppe wird nun der sog. $prev$-Pointer berechnet.
+$$prev(i) := \max \{ j \in \{ 1, \dots, i \}: \text{akt. Gruppenkontext } S_j <_{lex} \text{akt. Gruppenkontext } S_i \}$$
+$prev(i)$ ist verwandt mit der $\widehat{i}$-Funktion. Statt des \textit{nächst kleineren} Suffix, gibt $prev$ allerdings den ersten \textit{vorherigen} Suffix aus einer Gruppe mit \textit{kleinerem aktuellen Kontext} zurück. Aus dieser Verwandtschaft folgt, dass $j = prev(i) < i < \widehat{i} \le \widehat{j}$ gilt. Das bedeutet, dass der Gruppenkontext von $S_i$ Teil des Gruppenkontextes von $S_{prev(i)}$ ist. Es lässt sich zeigen, dass durch das Iterieren von großen zu kleinen Gruppen in jeder Iteration für jeden Suffix $S_i$ der gerade iterierten Gruppe gilt:
+$$concat(\text{aktueller Kontext } S_{prev(i)}, \text{aktueller Kontext } S_i) \sqsubseteq \text{Gruppenkontext } S_{prev(i)}$$
+Deshalb kann der aktuelle Kontext von $S_{prev(i)}$ um den aktuellen Kontext von $S_i$ erweitert werden. Der neue erweiterte Kontext von $S_{prev(i)}$ ist nun lexiographisch größer als vorher, $S_{prev(i)}$ wird deshalb aus seiner bisherigen Gruppe $G$ entfernt und in eine neue Gruppe $G'$ eingefügt, die in der Gruppenfolge hinter $G$ eingeordnet wird.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase1-R.pdf}
+	\caption{Iteration 1 von Phase 1: Kontexterweiterung mit Suffixen der \textit{R}-Gruppe}
+\label{fig:groupContext}
+\end{figure}
+
+Bei der soeben beschriebenen Kontexterweiterung kann nun folgender Fall eintreten: $k > 1$ der Suffixe der gerade iterierten Gruppe $G$ haben den selben $prev$-Pointer-Wert $p$. In dieser Situation wird der Kontext von $p$ $k$-mal um den $G$-Kontext erweitert. Durch einen Widerspruchsbeweis lässt sich nämlich leicht zeigen, dass der $G$-Kontext dann $k$-mal direkt hintereinander auf den $p$-Kontext folgt. Der Beweis wird hier ausgelassen.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase1-L.pdf}
+	\caption{Iteration 3 von Phase 1: Doppelte Kontexterweiterung mit Suffixen der \textit{L}-Gruppe}
+\label{fig:groupContext}
+\end{figure}
+
+Nachdem so über alle Gruppen iteriert wurde, sind die aktuellen Kontexte aller Gruppen gleich den finalen Gruppenkontexten. Insgesamt kann jeder Suffix höchstens einmal zur Kontexterweiterung eines anderen Suffixes benutzt werden und jede Kontexterweiterung benötigt konstante Zeit. Für diesen Teil von Phase 1 ergibt sich also eine Laufzeit von $\mathcal{O}(n)$. Dabei wurde die $prev$-Pointer-Berechnung allerdings noch nicht berücksichtigt. Ein naiver Ansatz zum Berechnen von $prev(i)$ ist, rückwärts von $i - 1$ bis $1$ zu iterieren und beim ersten Suffix aus einer kleineren aktuellen Gruppe als der von $S_i$ zu stoppen. Mit dieser Strategie benötigt die $prev$-Berechnung $\mathcal{O}(n)$ Schritte. Da $n$ Pointer zu berechnen sind, würde Phase 1 so also $\mathcal{O}(n^2)$ Schritte brauchen.\\
+
+Eine Optimierung ist notwendig: \textit{Pointer-Jumping}. Statt über alle $i - 1$ vorherige Suffixe zu iterieren, werden Suffixe übersprungen, die gar nicht als $prev$-Pointer in Frage kommen. Konkret wird beim Pointer-Jumping nicht über $i - 1,\, i - 2,\, i - 3, \dots$ sondern über $i - 1,\, prev(i - 1),\, prev^2(i - 1), \dots$ iteriert, wobei $prev^k(i) := \underbrace{prev(\dots prev}_{k \text{ mal}}(i))$.\\
+
+Es wird also der Kette der $prev$-Pointer ab Suffix $S_{i - 1}$ gefolgt. Dies funktioniert, da alle Suffixe zwischen $prev^{k + 1}(i - 1)$ und $prev^k(i - 1)$ per Definition von $prev$ größer sein müssen als $prev^k(i - 1)$ und somit unmöglich als Wert von $prev(i)$ in Frage kommen.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth,bb=0 0 1310 534]{./assets/phase1-EL.pdf}
+	\caption{Iteration 4 von Phase 1: $prev$-Pointer-Berechnung in der \textit{EL}-Gruppe}
+\label{fig:groupContext}
+\end{figure}
+
+Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Gruppeniteration von Phase 1 von $\mathcal{O}(n^2)$ auf $\mathcal{O}(n)$ reduziert werden. Dies liegt daran, dass jeder $prev$-Pointer nur höchstens einmal für einen Pointer-Jump benutzt wird. Insgesamt können also höchstens $n$ Pointer-Jumps stattfinden. Der Beweis wird hier ausgelassen.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\linewidth,bb=0 0 640 67]{./assets/phase1Result.pdf}
+	\caption{Ergebnis von Phase 1: Alle Suffixe sind gemäß ihrer Kontexte gruppiert und sortiert}
+\label{fig:groupContext}
+\end{figure}
+
 \subsubsection{Phase 2}
 
+\paragraph{Intuition} In Phase 2 müssen die Suffixe nun innerhalb ihrer Gruppen geordnet werden. Hierzu wird zuerst das erste Element des gesuchten Suffixarrays bestimmt. Da die Gruppenkontexte geschickt definiert wurden, ermöglicht dies das Induzieren des zweiten Elements des Suffixarrays, woraus wiederum die Position des dritten Elements folgt, usw. \\
+
+test
 
 \section{Performanceanalyse}
 
-test
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{r | c c c}
+& Skew & SA-IS & \textbf{GSACA} \\
+\hline
+Art & \textcolor{rot}{rekursiv} & \textcolor{rot}{rekursiv} & \textcolor{gruen}{iterativ} \\
+Zeit & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ \\
+Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 2n$ & $\textcolor{gruen}{\mathcal{O}(1)} + \textcolor{rot}{12n}$
+\end{tabular}
+
+\caption{Vergleich von Skew, SA-IS und GSACA}
+\label{tab:skewSaisGsacaComparison}
+\end{center}
+\end{table}
 
 \section{Fazit}
 
