@@ -15,6 +15,7 @@
 \usepackage{extramarks}
 \usepackage{sectsty}
 \usepackage[light]{roboto}
+\usepackage[round, sort, numbers]{natbib}
 
 \newcommand{\Frac}[2]{\frac{\displaystyle #1}{\displaystyle #2}}
 \newlength{\textwd}
@@ -104,7 +105,7 @@
 
 \section{Problemstellung}
 
-Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffixarrays. \\
+Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffixarrays. GSACA wurde 2015 im Rahmen der Masterarbeit~\cite{baierThesis} von Uwe Baier an der Universität Ulm entwickelt. \\
 
 Im Folgenden wird zunächst erörtert, was Suffixarrays sind und wozu sie benutzt werden.
 
@@ -132,7 +133,7 @@ Um Speicher zu sparen wird $SA$ allerdings nicht als Folge der Suffix-Zeichenket
 
 \subsection{Einsatzgebiete von Suffixarrays}
 
-Suffixarrays finden in vielen Bereichen als Index-Datenstruktur Verwendung. Ein typisches Problem, dessen Lösung durch Suffixarrays beschleunigt werden kann, ist z.~B. die Substringsuche. Bei dieser soll bestimmt werden, \textit{ob} und wenn ja, \textit{wo} in einem Text $T$ ein Pattern $P$ vorkommt. Ohne einen Index benötigt dieses Problem z.~B. mit Knuth-Morris-Pratt $\mathcal{O}(|T| + |P|)$. Mit einem Suffixarray als Index über $T$ hingegen lassen sich Matches durch eine binäre Suche in $\mathcal{O}(|P| \log |T|)$ finden. Da i.~d.~R. $|P| \ll |T|$, ist dies ein deutlicher Speedup, welcher z.~B. in Datenbanksystemen für Volltextsuchen und in der Bioinformatik für das Suchen in DNA-Daten nützlich ist.
+Suffixarrays finden in vielen Bereichen als Index-Datenstruktur Verwendung~\cite{wikiSuffixArray}. Ein typisches Problem, dessen Lösung durch Suffixarrays beschleunigt werden kann, ist z.~B. die Substringsuche. Bei dieser soll bestimmt werden, \textit{ob} und wenn ja, \textit{wo} in einem Text $T$ ein Pattern $P$ vorkommt. Ohne einen Index benötigt dieses Problem z.~B. mit Knuth-Morris-Pratt $\mathcal{O}(|T| + |P|)$. Mit einem Suffixarray als Index über $T$ hingegen lassen sich Matches durch eine binäre Suche in $\mathcal{O}(|P| \log |T|)$ finden. Da i.~d.~R. $|P| \ll |T|$, ist dies ein deutlicher Speedup, welcher z.~B. in Datenbanksystemen für Volltextsuchen und in der Bioinformatik für das Suchen in DNA-Daten nützlich ist.
 
 \begin{figure}[h]
 	\centering
@@ -155,26 +156,26 @@ Da es sich bei der Suffixarray-Berechnung im Wesentlichen um ein Sortierproblem 
 
 Es sind bereits zahlreiche Linearzeitalgorithmen zur Konstruktion von Suffixarrays bekannt. Allerdings sind all diese Verfahren rekursiv. Das bedeutet, dass sie neben der Eingabe und evtl. Hilfsdatenstrukturen zudem mindestens $\mathcal{O}(\log n)$ Speicher für die Stackframes der rekursiven Aufrufe benötigen.\\
 
-Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SA-IS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SA-IS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bekannten SACAs (suffix array construction algorithms). Obwohl es sich bei beiden um Linearzeitalgorithmen handelt, sind die konstanten Faktoren in Implementationen von SA-IS deutlich geringer.
+Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SAIS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SAIS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bekannten SACAs (suffix array construction algorithms). Obwohl es sich bei beiden um Linearzeitalgorithmen handelt, sind die konstanten Faktoren in Implementationen von SAIS deutlich geringer.
 
 \begin{table}[h]
 \begin{center}
 \begin{tabular}{r | c c c}
-& Skew & SA-IS & \textbf{GSACA} \\
+& Skew & SAIS & \textbf{GSACA} \\
 \hline
 Art & \textcolor{rot}{rekursiv} & \textcolor{rot}{rekursiv} & \textcolor{gruen}{iterativ} \\
 Zeit & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ \\
 Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 2n$ & $\textcolor{gruen}{\mathcal{O}(1)}\ +\ ?$
 \end{tabular}
 
-\caption{Vergleich von Skew, SA-IS und GSACA}
+\caption{Vergleich von Skew, SAIS und GSACA}
 \label{tab:skewSaisGsacaComparison}
 \end{center}
 \end{table}
 
 \section{Der GSACA-Algorithmus}
 
-Im Rest dieser Arbeit wird es um den GSACA-Algorithmus (greedy suffix array construction algorithm) gehen, welcher der erste bekannte rekursionsfreie Linearzeit-SACA ist. Skew und SA-IS werden dabei als Referenzalgorithmen dienen, mit denen GSACA verglichen wird.
+Im Rest dieser Arbeit wird es um den GSACA-Algorithmus (greedy suffix array construction algorithm) gehen, welcher der erste bekannte rekursionsfreie Linearzeit-SACA ist. Skew und SAIS werden dabei als Referenzalgorithmen dienen, mit denen GSACA verglichen wird.
 
 \subsection{Grundlegende Konzepte}
 
@@ -349,29 +350,41 @@ Da jedem Suffix höchstens einmal entlang einer $prev$-Pointer-Kette gefolgt wir
 
 \section{Performanceanalyse}
 
-test
+Nachdem nun erklärt wurde, die GSACA funktioniert, wird im Folgenden die Performance mit anderen SACAs verglichen.
+
+\paragraph{Speicherbedarf} In der GSACA-Referenzimplementation~\cite{gsacaImplementation}, die im Rahmen der ursprünglichen Masterarbeit entstanden ist, wird, zusätzlich zum Speicher für Eingabe und Ausgabearray, $12n$ Speicher benötigt. Die rekursionsfreie Natur von GSACA bringt im Vergleich zu z.~B. SAIS aktuell also keinen Speichervorteil.
 
 \begin{table}[h]
 \begin{center}
 \begin{tabular}{r | c c c}
-& Skew & SA-IS & \textbf{GSACA} \\
+& Skew & SAIS & \textbf{GSACA} \\
 \hline
 Art & \textcolor{rot}{rekursiv} & \textcolor{rot}{rekursiv} & \textcolor{gruen}{iterativ} \\
 Zeit & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n)$ \\
 Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 2n$ & $\textcolor{gruen}{\mathcal{O}(1)} + \textcolor{rot}{12n}$
 \end{tabular}
 
-\caption{Vergleich von Skew, SA-IS und GSACA}
-\label{tab:skewSaisGsacaComparison}
+\caption{Vergleich von Skew, SAIS und GSACA}
+\label{tab:skewSaisGsacaComparison2}
 \end{center}
 \end{table}
+\paragraph{Geschwindigkeit} Wie Abbildung~\ref{fig:performance} zeigt, kann GSACA aktuell auch im Hinblick auf seine Sortiergeschwindigkeit noch nicht mit dem state of the art SAIS Verfahren mithalten. Dies liegt zum einen daran, dass die Implementation von SAIS im Laufe der letzten Jahre immer weiter optimiert werden konnte. Da GSACA noch ein sehr junges Verfahren ist, wurde noch nicht genug Zeit in das Finden einer bestmöglichen Implementation investiert. Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das viele nicht-lokale Springen zwischen Suffixen, z.~B. beim Pointer-Jumping, viele Cache-Misses produziert werden.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.6\linewidth,bb=0 0 830 495]{./assets/performance.pdf}
+	\caption{Geschwindingkeit von GSACA im Vergleich, Testdaten: Silesia Corpus}
+\label{fig:performance}
+\end{figure}
+
+Die Testergebnisse stammen aus der ursprünglichen GSACA-Masterarbeit und wurden unter Ubuntu 14.04.3 LTS (Kernel 3.13) auf einem Intel Xeon E5-2680v2 mit 2,8 GHz und 128 GB Hauptspeicher durchgeführt.
 
 \section{Fazit}
 
-test
+Wie soeben in der Performanceanalyse gezeigt, ist GSACA aktuell noch nicht praxistauglich. Dies liegt allerdings vielmehr an der Neuheit des Verfahrens, als an der fundamentalen Untauglichkeit der verwendeten Ideen. Im Rahmen zukünftiger Forschung könnte beispielsweise versucht werden durch eine Stack-basierte Organisation der Daten das erwähnte Cache-Miss-Problem zu lösen, da wegen der $prev$-Pointer und der $\widehat{i}$ basierten Kontexte viel mit vorher/nachher-Relationen gearbeitet wird. Detaillierte Verbesserungsideen existieren allerdings noch nicht. GSACA ist aktuell also als Ausgangspunkt für weitere Forschung zu sehen.
 
 \addcontentsline{toc}{section}{Literaturverzeichnis}
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \bibliography{paper}
 
 \end{document}
