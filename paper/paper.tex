@@ -268,7 +268,7 @@ Bei der soeben beschriebenen Kontexterweiterung kann nun folgender Fall eintrete
 
 Nachdem so über alle Gruppen iteriert wurde, sind die aktuellen Kontexte aller Gruppen gleich den finalen Gruppenkontexten. Insgesamt kann jeder Suffix höchstens einmal zur Kontexterweiterung eines anderen Suffixes benutzt werden und jede Kontexterweiterung benötigt konstante Zeit. Für diesen Teil von Phase 1 ergibt sich also eine Laufzeit von $\mathcal{O}(n)$. Dabei wurde die $prev$-Pointer-Berechnung allerdings noch nicht berücksichtigt. Ein naiver Ansatz zum Berechnen von $prev(i)$ ist, rückwärts von $i - 1$ bis $1$ zu iterieren und beim ersten Suffix aus einer kleineren aktuellen Gruppe als der von $S_i$ zu stoppen. Mit dieser Strategie benötigt die $prev$-Berechnung $\mathcal{O}(n)$ Schritte. Da $n$ Pointer zu berechnen sind, würde Phase 1 so also $\mathcal{O}(n^2)$ Schritte brauchen.\\
 
-Eine Optimierung ist notwendig: \textit{Pointer-Jumping}. Statt über alle $i - 1$ vorherige Suffixe zu iterieren, werden Suffixe übersprungen, die gar nicht als $prev$-Pointer in Frage kommen. Konkret wird beim Pointer-Jumping nicht über $i - 1,\, i - 2,\, i - 3, \dots$ sondern über $i - 1,\, prev(i - 1),\, prev^2(i - 1), \dots$ iteriert, wobei $prev^k(i) := \underbrace{prev(\dots prev}_{k \text{ mal}}(i))$.\\
+Eine Optimierung ist notwendig: \textit{Pointer-Jumping}. Statt über alle $i - 1$ vorherige Suffixe zu iterieren, werden Suffixe übersprungen, die gar nicht als $prev$-Pointer in Frage kommen. Konkret wird beim Pointer-Jumping nicht über $i - 1,\, i - 2,\, i - 3, \dots$ sondern über $i - 1,\, prev(i - 1),\, prev^2(i - 1), \dots$ iteriert, wobei $prev^1(i) := prev(i),\ prev^k(i) := prev^{k - 1}(prev(i))$.\\
 
 Es wird also der Kette der $prev$-Pointer ab Suffix $S_{i - 1}$ gefolgt, bis darin ein kleinerer Suffix gefunden wurde. Dies funktioniert, da alle Suffixe zwischen $prev^{k + 1}(i - 1)$ und $prev^k(i - 1)$ per Definition von $prev$ größer sein müssen als $prev^k(i - 1)$ und somit unmöglich als Wert von $prev(i)$ in Frage kommen, weil ja schon $prev^k(i - 1)$ zu groß ist.
 
@@ -280,7 +280,6 @@ Es wird also der Kette der $prev$-Pointer ab Suffix $S_{i - 1}$ gefolgt, bis dar
 \end{figure}
 
 Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Gruppeniteration von Phase 1 von $\mathcal{O}(n^2)$ auf $\mathcal{O}(n)$ reduziert werden. Dies liegt daran, dass jeder $prev$-Pointer nur höchstens einmal für einen Pointer-Jump benutzt wird. Insgesamt können also höchstens $n$ Pointer-Jumps stattfinden. Der Beweis wird hier ausgelassen.
-
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\linewidth,bb=0 0 640 67]{./assets/phase1Result.pdf}
@@ -368,7 +367,7 @@ Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{
 \label{tab:skewSaisGsacaComparison2}
 \end{center}
 \end{table}
-\paragraph{Geschwindigkeit} Wie Abbildung~\ref{fig:performance} zeigt, kann GSACA aktuell auch im Hinblick auf seine Sortiergeschwindigkeit noch nicht mit dem state of the art SAIS Verfahren mithalten. Dies liegt zum einen daran, dass die Implementation von SAIS im Laufe der letzten Jahre immer weiter optimiert werden konnte. Da GSACA noch ein sehr junges Verfahren ist, wurde noch nicht genug Zeit in das Finden einer bestmöglichen Implementation investiert. Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das viele nicht-lokale Springen zwischen Suffixen, z.~B. beim Pointer-Jumping, viele Cache-Misses produziert werden.
+\paragraph{Geschwindigkeit} Wie Abbildung~\ref{fig:performance} zeigt, kann GSACA aktuell auch im Hinblick auf seine Sortiergeschwindigkeit noch nicht mit dem state of the art SAIS Verfahren mithalten. Dies liegt zum einen daran, dass die Implementationen von SAIS im Laufe der letzten Jahre stärker optimiert werden konnten. Da GSACA noch ein sehr junges Verfahren ist, wurde noch nicht genug Zeit in das Finden einer bestmöglichen Implementation investiert. Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das viele nicht-lokale Springen zwischen Suffixen, z.~B. beim Pointer-Jumping, viele Cache-Misses produziert werden.
 
 \begin{figure}[h]
 	\centering
