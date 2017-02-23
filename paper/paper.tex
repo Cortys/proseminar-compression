@@ -49,9 +49,6 @@
 
 \newcolumntype{.}{D{.}{.}{-1}}
 
-\widowpenalty 10000
-\clubpenalty 10000
-
 \textwidth 17cm
 \textheight 21.5cm
 \oddsidemargin 0cm
@@ -228,7 +225,7 @@ Diese sortierte Folge von Gruppen wird nun als Eingabe der \textit{zweiten Phase
 	\centering
 	\includegraphics[width=0.7\linewidth,bb=0 0 874 376]{./assets/twoPhases.pdf}
 	\caption{Ausgabe beider Phasen für $S =$ `parallel\$', Farben kennzeichnen Gruppen}
-\label{fig:groupContext}
+\label{fig:twoPhases}
 \end{figure}
 
 Das Ergebnis der zweiten Phase ist das gesuchte Suffixarray. Ziel ist es nun beide Phasen ohne Rekursion als $\mathcal{O}(n)$-Algorithmen zu formulieren.
@@ -243,20 +240,20 @@ Konkret bedeutet dies, dass der Kontext jedes Suffixes $S_i$ zu Beginn auf $S[i]
 	\centering
 	\includegraphics[width=0.5\linewidth,bb=0 0 640 207]{./assets/bucketsort.pdf}
 	\caption{Ergebnis des Bucketsorts für $S =$ `parallel\$'}
-\label{fig:groupContext}
+\label{fig:bucketsort}
 \end{figure}
 
 Manche der sich ergebenden Gruppen müssen nun durch Kontexterweiterungen aufgespalten werden. Dies geschieht indem von hinten nach vorne, i.~e.\ von großem zu kleinem Kontext, über die Gruppen iteriert wird. Für jeden Suffix der aktuell iterierten Gruppe wird nun der sog. $prev$-Pointer berechnet.
 $$prev(i) := \max \{ j \in \{ 1, \dots, i \}: \text{akt. Gruppenkontext } S_j <_{lex} \text{akt. Gruppenkontext } S_i \}$$
 $prev(i)$ ist verwandt mit der $\widehat{i}$-Funktion. Statt des \textit{nächst kleineren} Suffix, gibt $prev$ allerdings den ersten \textit{vorherigen} Suffix aus einer Gruppe mit \textit{kleinerem aktuellen Kontext} zurück. Aus dieser Verwandtschaft folgt, dass $j = prev(i) < i < \widehat{i} \le \widehat{j}$ gilt. Das bedeutet, dass der Gruppenkontext von $S_i$ Teil des Gruppenkontextes von $S_{prev(i)}$ ist. Es lässt sich zeigen, dass durch das Iterieren von großen zu kleinen Gruppen in jeder Iteration für jeden Suffix $S_i$ der gerade iterierten Gruppe gilt:
-$$concat(\text{aktueller Kontext } S_{prev(i)}, \text{aktueller Kontext } S_i) \sqsubseteq \text{Gruppenkontext } S_{prev(i)}$$
+$$concat(\text{aktueller Kontext } S_{prev(i)},\ \text{aktueller Kontext } S_i) \sqsubseteq \text{Gruppenkontext } S_{prev(i)}$$
 Deshalb kann der aktuelle Kontext von $S_{prev(i)}$ um den aktuellen Kontext von $S_i$ erweitert werden. Der neue erweiterte Kontext von $S_{prev(i)}$ ist nun lexiographisch größer als vorher, $S_{prev(i)}$ wird deshalb aus seiner bisherigen Gruppe $G$ entfernt und in eine neue Gruppe $G'$ eingefügt, die in der Gruppenfolge hinter $G$ eingeordnet wird.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase1-R.pdf}
 	\caption{Iteration 1 von Phase 1: Kontexterweiterung mit Suffixen der \textit{R}-Gruppe}
-\label{fig:groupContext}
+\label{fig:phase1-R}
 \end{figure}
 
 Bei der soeben beschriebenen Kontexterweiterung kann nun folgender Fall eintreten: $k > 1$ der Suffixe der gerade iterierten Gruppe $G$ haben den selben $prev$-Pointer-Wert $p$. In dieser Situation wird der Kontext von $p$ $k$-mal um den $G$-Kontext erweitert. Durch einen Widerspruchsbeweis lässt sich nämlich leicht zeigen, dass der $G$-Kontext dann $k$-mal direkt hintereinander auf den $p$-Kontext folgt. Der Beweis wird hier ausgelassen.
@@ -265,20 +262,20 @@ Bei der soeben beschriebenen Kontexterweiterung kann nun folgender Fall eintrete
 	\centering
 	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase1-L.pdf}
 	\caption{Iteration 3 von Phase 1: Doppelte Kontexterweiterung mit Suffixen der \textit{L}-Gruppe}
-\label{fig:groupContext}
+\label{fig:phase1-L}
 \end{figure}
 
 Nachdem so über alle Gruppen iteriert wurde, sind die aktuellen Kontexte aller Gruppen gleich den finalen Gruppenkontexten. Insgesamt kann jeder Suffix höchstens einmal zur Kontexterweiterung eines anderen Suffixes benutzt werden und jede Kontexterweiterung benötigt konstante Zeit. Für diesen Teil von Phase 1 ergibt sich also eine Laufzeit von $\mathcal{O}(n)$. Dabei wurde die $prev$-Pointer-Berechnung allerdings noch nicht berücksichtigt. Ein naiver Ansatz zum Berechnen von $prev(i)$ ist, rückwärts von $i - 1$ bis $1$ zu iterieren und beim ersten Suffix aus einer kleineren aktuellen Gruppe als der von $S_i$ zu stoppen. Mit dieser Strategie benötigt die $prev$-Berechnung $\mathcal{O}(n)$ Schritte. Da $n$ Pointer zu berechnen sind, würde Phase 1 so also $\mathcal{O}(n^2)$ Schritte brauchen.\\
 
 Eine Optimierung ist notwendig: \textit{Pointer-Jumping}. Statt über alle $i - 1$ vorherige Suffixe zu iterieren, werden Suffixe übersprungen, die gar nicht als $prev$-Pointer in Frage kommen. Konkret wird beim Pointer-Jumping nicht über $i - 1,\, i - 2,\, i - 3, \dots$ sondern über $i - 1,\, prev(i - 1),\, prev^2(i - 1), \dots$ iteriert, wobei $prev^k(i) := \underbrace{prev(\dots prev}_{k \text{ mal}}(i))$.\\
 
-Es wird also der Kette der $prev$-Pointer ab Suffix $S_{i - 1}$ gefolgt. Dies funktioniert, da alle Suffixe zwischen $prev^{k + 1}(i - 1)$ und $prev^k(i - 1)$ per Definition von $prev$ größer sein müssen als $prev^k(i - 1)$ und somit unmöglich als Wert von $prev(i)$ in Frage kommen.
+Es wird also der Kette der $prev$-Pointer ab Suffix $S_{i - 1}$ gefolgt, bis darin ein kleinerer Suffix gefunden wurde. Dies funktioniert, da alle Suffixe zwischen $prev^{k + 1}(i - 1)$ und $prev^k(i - 1)$ per Definition von $prev$ größer sein müssen als $prev^k(i - 1)$ und somit unmöglich als Wert von $prev(i)$ in Frage kommen, weil ja schon $prev^k(i - 1)$ zu groß ist.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth,bb=0 0 1310 534]{./assets/phase1-EL.pdf}
 	\caption{Iteration 4 von Phase 1: $prev$-Pointer-Berechnung in der \textit{EL}-Gruppe}
-\label{fig:groupContext}
+\label{fig:phase1-EL}
 \end{figure}
 
 Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Gruppeniteration von Phase 1 von $\mathcal{O}(n^2)$ auf $\mathcal{O}(n)$ reduziert werden. Dies liegt daran, dass jeder $prev$-Pointer nur höchstens einmal für einen Pointer-Jump benutzt wird. Insgesamt können also höchstens $n$ Pointer-Jumps stattfinden. Der Beweis wird hier ausgelassen.
@@ -287,16 +284,72 @@ Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Grupp
 	\centering
 	\includegraphics[width=0.5\linewidth,bb=0 0 640 67]{./assets/phase1Result.pdf}
 	\caption{Ergebnis von Phase 1: Alle Suffixe sind gemäß ihrer Kontexte gruppiert und sortiert}
-\label{fig:groupContext}
+\label{fig:phase1Result}
 \end{figure}
 
 \subsubsection{Phase 2}
 
 \paragraph{Intuition} In Phase 2 müssen die Suffixe nun innerhalb ihrer Gruppen geordnet werden. Hierzu wird zuerst das erste Element des gesuchten Suffixarrays bestimmt. Da die Gruppenkontexte geschickt definiert wurden, ermöglicht dies das Induzieren des zweiten Elements des Suffixarrays, woraus wiederum die Position des dritten Elements folgt, usw. \\
 
-test
+Konkret iteriert Phase 2, wie schon Phase 1, über alle Suffixe. Diesmal allerdings nicht von hinten nach vorne, sondern von vorne nach hinten, von den Suffixen der lexiographisch kleinsten Gruppe zu den Suffixen der größten Gruppe. \textit{Vor} jeder Iteration $i \in \{ 1, \dots, n \}$ gilt dabei die Invariante, dass die ersten $i$-Suffixe bereits an ihre finale Position im Suffixarray $SA$ einsortiert wurden. Für die erste Iteration $i = 1$ gilt dies, da GSACA per Definiton eine nullterminierte Eingabe erwartet und daher immer $SA[1] = \$$. \textit{Während} der $i$-ten Iteration wird zuerst die Suffixmenge $P_i$ berechnet.
+\begin{align*}
+	P_i :=\ & \{ \text{Suffix } S_j: \widehat{j} = SA[i] \} \\
+	=\ & \{ \text{Suffix } S_j: S_j = concat(\text{Gruppenkontext von } S_j,\ S_{SA[i]}) \}
+\end{align*}
+Alle $S_j \in P_i$ werden danach aus ihrer Gruppe $G$ entfernt und vor $G$ eingefügt. Die resultierende Position $k$ von $S_j$ in der Gruppenliste ist die finale Position in $SA$, es kann also $SA[k] \leftarrow j$ gesetzt werden. Dies funktioniert, da die Suffixe von klein nach groß durchlaufen werden. Aus jeder Gruppe mit mehreren Suffixen wird daher zuerst der Suffix nach vorne gestellt, auf dessen Kontext der kleinste Suffix folgt und der somit per Definition von `$<_{lex}$' auch tatsächlich der kleinste Suffix seiner Gruppe ist. \\
+
+Es gilt, dass $\widehat{SA[i + 1]} \in \{ SA[j]: j \in \{ 1, \dots, i \} \}$, da der Kontext des $(i + 1)$-ten Suffix nur von einem der kleineren Suffixe terminiert werden kann. Daher muss spätestens nach der $i$-ten Iteration $SA[i + 1]$ gefunden worden sein. Die zuvor definierte Invariante gilt also weiterhin. Nach der $(n - 1)$-ten Iteration müssen daher alle $n$ Suffixe korrekt einsortiert worden sein und $SA$ wurde berechnet.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase2-1.pdf}
+	\caption{Iteration 1 von Phase 2: Einsortierung der $P_1$-Menge}
+\label{fig:phase2-1}
+\end{figure}
+
+Die Laufzeit von Phase 2 hängt davon ab, wie schnell die $P_i$-Mengen ermittelt werden können. Die naive Strategie hierzu ist über alle Suffixe $S_j \ \in \{ S_1, \dots, S_{SA[i] - 1} \}$ zu iterieren und auf $\widehat{j} = SA[i]$ zu prüfen. Dafür sind $\mathcal{O}(n)$ notwendig. Da insgesamt $n - 1$ $P_i$-Mengen bestimmt werden müssen, ergibt sich mit der naiven Strategie also eine Laufzeit von $\mathcal{O}(n^2)$. \\
+Wie schon bei der $prev$-Pointer-Berechnung in Phase 1 ist auch hier wieder eine Optimierung notwendig. Es lässt sich zeigen, dass die vorherige Definition von $P_i$ äquivalent ist zu:
+\begin{align*}
+	P_i &:= \pi(SA[i] - 1) \\
+	\pi(j) &:= \begin{cases}
+		\{ S_j \} \cup \pi(prev(j)): & S_j \text{ wurde noch nicht in $SA$ einsortiert} \land \exists\ prev(j) \\
+		\{ S_j \}: & S_j \text{ wurde noch nicht in $SA$ einsortiert} \land \nexists\ prev(j) \\
+		\emptyset: & \text{sonst}
+	\end{cases}
+\end{align*}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase2-2.pdf}
+	\caption{Iteration 2 von Phase 2: Berechnung und Einsortierung der $P_2$-Menge}
+\label{fig:phase2-2}
+\end{figure}
+\hline
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase2-4.pdf}
+	\caption{Iteration 4 von Phase 2: Berechnung und Einsortierung der $P_4$-Menge}
+\label{fig:phase2-4}
+\end{figure}
+
+Es werden also alle alle Suffixe in $P_i$ aufgenommen, die auf der $prev$-Pointer-Kette liegen, die bei $S_{SA[i] - 1}$ beginnt, bis auf dieser Kette ein bereits einsortierter Suffix erreicht wird. Eine Intuition für die Korrektheit dieser Definition liefern diese zwei Überlegungen:
+
+\begin{enumerate}
+	\item Für $S_j \in P_i$ gilt, dass alle Suffixe zwischen $prev(j)$ und $j$ unmöglich in $P_i$ sein können, denn: $$\forall\ k \in \{ prev(j) + 1, \dots, j - 1 \}: S_j <_{lex} S_k \implies \widehat{k} \le j < \widehat{j} = i \implies S_k \notin P_i$$
+	\item Falls beim Iterieren über die $prev$-Pointer-Kette ein Suffix $S_j$ erreicht wird, der bereits in $SA$ einsortiert wurde, kann dieser und alle noch in der Kette folgenden Suffixe unmöglich in $P_i$ liegen. Offensichtlich gilt, dass $S_j \notin P_i$, da auf den Kontext von $S_j$ ein anderer Suffix $S_l <_{lex} S_{SA[i]}$ folgen muss, sonst wäre $S_j$ nicht bereits einsortiert worden. Durch einen Widerspruchsbeweis lässt sich zeigen, dass alle Suffixe vor $S_j$ ebenfalls nicht in $P_i$ enthalten sein können. Der Beweis wird hier ausgelassen.
+\end{enumerate}
+
+Da jedem Suffix höchstens einmal entlang einer $prev$-Pointer-Kette gefolgt wird – danach wird er schließlich in $SA$ einsortiert und beendet ab dann weitere $prev$-Pointer-Ketten – und es $n$ Suffixe gibt, werden in Phase 2 für das Berechnen der $P_i$-Mengen also insgesamt $\mathcal{O}(n)$ Schritte benötigt. Beide Phasen laufen somit in Linearzeit, was GSACA zu einem rekursionsfreien Linearzeit-Suffix-Sorting-Algorithmus macht.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.6\linewidth,bb=0 0 715 67]{./assets/phase2Result.pdf}
+	\caption{Ergebnis von Phase 2: Das Suffixarray $SA$ für $S =$ `parallel'}
+\label{fig:phase2Result}
+\end{figure}
 
 \section{Performanceanalyse}
+
+test
 
 \begin{table}[h]
 \begin{center}
