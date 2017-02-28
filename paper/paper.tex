@@ -50,13 +50,20 @@
 
 \newcolumntype{.}{D{.}{.}{-1}}
 
+\headheight0cm
+\headsep1cm
+\voffset-1in
+\topmargin2.5cm
+
 \hoffset-1in
 \marginparsep0cm
 \marginparwidth0cm
-\textwidth17cm
-\textheight21.5cm
-\oddsidemargin2.3cm
-\evensidemargin1.7cm
+\textwidth15.5cm
+\textheight22cm
+\evensidemargin2.25cm
+\oddsidemargin3.25cm
+
+\footskip2cm
 
 % Colors:
 \definecolor{blau}{HTML}{355FB3}
@@ -69,9 +76,10 @@
 
 % Header:
 \fancyhf{}
-\fancyhead[EL,OR]{\sffamily{\thepage}}
-\fancyhead[OL,ER]{\nouppercase{\sffamily{\firstleftmark}}}
-\fancyfoot[OR]{\includegraphics[width=0.35cm]{./assets/ubpBlue.pdf}}
+\fancyhead[OR,EL]{\nouppercase{\sffamily{\firstleftmark}}}
+\fancyhead[OL]{\includegraphics[width=0.3cm]{./assets/ubpBlue.pdf}\quad\sffamily{Proseminar Datenkompression}}
+\fancyhead[ER]{\sffamily{Proseminar Datenkompression}\quad\includegraphics[width=0.3cm]{./assets/ubpBlue.pdf}}
+\fancyfoot[EL,OR]{\sffamily{\thepage}}
 
 \begin{document}
 
@@ -95,9 +103,9 @@
 \newpage
 \
 \newpage
-
 % Inhaltsverzeichnis:
 \pagestyle{fancy}
+\ \\[-7ex]
 \tableofcontents
 
 \newpage
@@ -265,7 +273,7 @@ Bei der soeben beschriebenen Kontexterweiterung kann nun folgender Fall eintrete
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase1-L.pdf}
-	\caption{Iteration 3 von Phase 1: Doppelte Kontexterweiterung mit Suffixen der \textit{L}-Gruppe}
+	\caption{Iteration 3 von Phase 1: Doppelte Kontexterweiterung der \textit{L}-Gruppe}
 \label{fig:phase1-L}
 \end{figure}
 
