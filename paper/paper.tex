@@ -118,9 +118,9 @@
 
 \section{Problemstellung}
 
-Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffixarrays. \\
+Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. GSACA wurde 2015 im Rahmen der Masterarbeit~\cite{baierThesis} von Uwe Baier an der Universität Ulm entwickelt. \\
 
-GSACA wurde 2015 im Rahmen der Masterarbeit~\cite{baierThesis} von Uwe Baier an der Universität Ulm entwickelt. Im Folgenden wird zunächst erörtert, was Suffixarrays sind und wozu sie benutzt werden.
+Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffixarrays. Im Folgenden wird zunächst erörtert, was Suffixarrays sind und wozu sie benutzt werden.
 
 \subsection{Was ist ein Suffixarray?}
 
@@ -159,17 +159,17 @@ Ein weiteres Einsatzgebiet für Suffixarrays ist als Suchstruktur für das Slidi
 
 \section{Ansätze zur Suffixarray-Konstruktion}
 
-Nachdem nun der Begriff des Suffixarrays definiert wurde, wird im Folgenden betrachtet wie sich dieses prinzipiell algorithmisch berechnen lässt.
+Nachdem nun der Begriff des Suffixarrays definiert wurde, wird im Folgenden betrachtet, wie sich dieses prinzipiell algorithmisch berechnen lässt.
 
 \subsection{Naiver Ansatz}
 
-Da es sich bei der Suffixarray-Berechnung im Wesentlichen um ein Sortierproblem handelt, liegt die Idee nahe dies mit einem allgemeinen Sortierverfahren zu lösen. Dazu bietet sich z.~B. der Quicksort-Algorithmus an. Im average case wären dann $\mathcal{O}(n \log n)$ Vergleiche notwendig. Für den lexiographischen Vergleich zweier Suffixe müssen wiederum bis zu $\mathcal{O}(n)$ Zeichen miteinander verglichen werden. Insgesamt ergibt sich also eine Laufzeit von $\mathcal{O}(n^2 \log n)$. Dies ist weit von der angestrebten $\mathcal{O}(n)$-Laufzeit entfernt. Allgemeine Sortierverfahren sind daher für die Suffixarray-Konstruktion unbrauchbar.
+Da es sich bei der Suffixarray-Berechnung im Wesentlichen um ein Sortierproblem handelt, liegt die Idee nahe dies mit einem allgemeinen Sortierverfahren zu lösen. Dazu bietet sich z.~B. der Quicksort-Algorithmus an. Im Average-Case wären dann $\mathcal{O}(n \log n)$ Vergleiche notwendig. Für den lexiographischen Vergleich zweier Suffixe müssen wiederum bis zu $\mathcal{O}(n)$ Zeichen miteinander verglichen werden. Insgesamt ergibt sich also eine Laufzeit von $\mathcal{O}(n^2 \log n)$. Dies ist weit von der angestrebten $\mathcal{O}(n)$-Laufzeit entfernt. Allgemeine Sortierverfahren sind daher für die Suffixarray-Konstruktion unbrauchbar.
 
 \subsection{Überblick über bisherige Linearzeitansätze}
 
 Es sind bereits zahlreiche Linearzeitalgorithmen zur Konstruktion von Suffixarrays bekannt. Allerdings sind all diese Verfahren rekursiv. Das bedeutet, dass sie neben der Eingabe und evtl. Hilfsdatenstrukturen zudem mindestens $\mathcal{O}(\log n)$ Speicher für die Stackframes der rekursiven Aufrufe benötigen.\\
 
-Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SAIS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SAIS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bisher bekannten SACAs (suffix array construction algorithms). Obwohl sowohl Skew, als auch SAIS ein Linearzeitalgorithmus ist, sind die konstanten Faktoren in Implementationen von SAIS deutlich geringer.
+Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SAIS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SAIS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bisher bekannten SACAs (suffix array construction algorithms). Obwohl sowohl Skew als auch SAIS ein Linearzeitalgorithmen sind, sind die konstanten Faktoren in Implementationen von SAIS deutlich geringer.
 
 \begin{table}[h]
 \begin{center}
@@ -188,7 +188,7 @@ Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{
 
 \section{Der GSACA-Algorithmus}
 
-Im Rest dieser Arbeit wird es um den GSACA-Algorithmus (greedy suffix array construction algorithm) gehen, welcher der erste bekannte rekursionsfreie Linearzeit-SACA ist. Skew und SAIS werden dabei als Referenzalgorithmen dienen, mit denen GSACA verglichen wird.
+Im Rest dieser Arbeit wird es um den GSACA-Algorithmus (Greedy Suffix Array Construction Algorithm) gehen, welcher der erste bekannte rekursionsfreie Linearzeit-SACA ist. Skew und SAIS werden dabei als Referenzalgorithmen dienen, mit denen GSACA verglichen wird.
 
 \subsection{Grundlegende Konzepte}
 
@@ -226,11 +226,11 @@ Für die Gruppierung von Suffixen benutzt GSACA das Konzept des \textit{Gruppenk
 \label{fig:groupContext}
 \end{figure}
 
-Der Gruppenkontext eines Suffixes $S_i$ ist also dessen erster Präfix auf den ein lexiographisch kleinerer Suffix von $S_i$ folgt.
+Der Gruppenkontext eines Suffixes $S_i$ ist also dessen erster Präfix, auf den ein lexiographisch kleinerer Suffix von $S_i$ folgt.
 
 \subsection{Die zwei Phasen von GSACA}
 
-Mit dem Konzept des induzierten Sortierens und dem des Gruppenkontextes zur Gruppierung von Suffixen, lässt sich GSACA nun als ein in zwei Phasen ablaufender Algorithmus verstehen. \\
+Mit dem Konzept des induzierten Sortierens und dem des Gruppenkontextes zur Gruppierung von Suffixen lässt sich GSACA nun als ein in zwei Phasen ablaufender Algorithmus verstehen. \\
 
 In der \textit{ersten Phase} werden alle Suffixe der Eingabe gemäß ihrer Gruppenkontexte in Gruppen zusammengefasst. Die resultierenden Gruppen werden dabei nach Gruppenkontext aufsteigend sortiert zurückgegeben. \\
 
@@ -258,11 +258,11 @@ Konkret bedeutet dies, dass der Kontext jedes Suffixes $S_i$ zu Beginn auf $S[i]
 \label{fig:bucketsort}
 \end{figure}
 
-Manche der sich ergebenden Gruppen müssen nun durch Kontexterweiterungen aufgespalten werden. Dies geschieht indem von hinten nach vorne, i.~e.\ von großem zu kleinem Kontext, über die Gruppen iteriert wird. Für jeden Suffix der aktuell iterierten Gruppe wird nun der sog. $prev$-Pointer berechnet.
+Manche der sich ergebenden Gruppen müssen nun durch sogenannte \textit{Kontexterweiterungen} aufgespalten werden. Dies geschieht indem von hinten nach vorne, i.~e.\ von großem zu kleinem Kontext, über die Gruppen iteriert wird. Für jeden Suffix der aktuell iterierten Gruppe wird nun der sog. $prev$-Pointer berechnet.
 $$prev(i) := \max \{ j \in \{ 1, \dots, i \}: \text{akt. Gruppenkontext } S_j <_{lex} \text{akt. Gruppenkontext } S_i \}$$
 $prev(i)$ ist verwandt mit der $\widehat{i}$-Funktion. Statt des \textit{nächst kleineren} Suffix, gibt $prev$ allerdings den ersten \textit{vorherigen} Suffix aus einer Gruppe mit \textit{kleinerem aktuellen Kontext} zurück. Aus dieser Verwandtschaft folgt, dass $j = prev(i) < i < \widehat{i} \le \widehat{j}$ gilt. Das bedeutet, dass der Gruppenkontext von $S_i$ Teil des Gruppenkontextes von $S_{prev(i)}$ ist. Es lässt sich zeigen, dass durch das Iterieren von großen zu kleinen Gruppen in jeder Iteration für jeden Suffix $S_i$ der gerade iterierten Gruppe gilt:
 $$concat(\text{aktueller Kontext } S_{prev(i)},\ \text{aktueller Kontext } S_i) \sqsubseteq \text{Gruppenkontext } S_{prev(i)}$$
-Deshalb kann der aktuelle Kontext von $S_{prev(i)}$ um den aktuellen Kontext von $S_i$ erweitert werden. Der neue erweiterte Kontext von $S_{prev(i)}$ ist nun lexiographisch größer als vorher, $S_{prev(i)}$ wird deshalb aus seiner bisherigen Gruppe $G$ entfernt und in eine neue Gruppe $G'$ eingefügt, die in der Gruppenfolge hinter $G$ eingeordnet wird.
+Deshalb kann der aktuelle Kontext von $S_{prev(i)}$ um den aktuellen Kontext von $S_i$ erweitert werden. Der neue erweiterte Kontext von $S_{prev(i)}$ ist nun lexiographisch größer als vorher. $S_{prev(i)}$ wird deshalb aus seiner bisherigen Gruppe $G$ entfernt und in eine neue Gruppe $G'$ eingefügt, die in der Gruppenfolge hinter $G$ eingeordnet wird.
 
 \begin{figure}[h]
 	\centering
@@ -391,11 +391,11 @@ Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das 
 \label{fig:performance}
 \end{figure}
 
-Die Testergebnisse stammen aus der ursprünglichen GSACA-Masterarbeit und wurden unter Ubuntu 14.04.3 LTS (Kernel 3.13) auf einem Intel Xeon E5-2680v2 mit 2,8 GHz und 128 GB Hauptspeicher durchgeführt.
+Die Testergebnisse stammen aus der ursprünglichen GSACA-Masterarbeit~\cite{baierThesis} und wurden unter Ubuntu 14.04.3 LTS (Kernel 3.13) auf einem Intel Xeon E5-2680v2 mit 2,8 GHz und 128 GB Hauptspeicher durchgeführt.
 
 \section{Fazit}
 
-Wie soeben in der Performanceanalyse gezeigt, ist GSACA aktuell noch nicht praxistauglich. Dies liegt allerdings vielmehr an der Neuheit des Verfahrens, als an der fundamentalen Untauglichkeit der verwendeten Ideen. Im Rahmen zukünftiger Forschung könnte beispielsweise versucht werden durch eine Stack-basierte Organisation der Daten das erwähnte Cache-Miss-Problem zu lösen, da wegen der $prev$-Pointer und der $\widehat{i}$ basierten Kontexte viel mit vorher/nachher-Relationen gearbeitet wird. Detaillierte Verbesserungsideen existieren allerdings noch nicht. GSACA ist aktuell also als Ausgangspunkt für weitere Forschung zu sehen.
+Wie soeben in der Performanceanalyse gezeigt, ist GSACA aktuell noch nicht praxistauglich. Dies liegt allerdings vielmehr an der Neuheit des Verfahrens, als an der fundamentalen Untauglichkeit der verwendeten Ideen. Im Rahmen zukünftiger Forschung könnte beispielsweise versucht werden durch eine Stack-basierte Organisation der Daten das erwähnte Cache-Miss-Problem zu lösen. Dies bietet sich an, da wegen der $prev$-Pointer und der $\widehat{i}$ basierten Kontexte viel mit vorher/nachher-Relationen gearbeitet wird. Detaillierte Verbesserungsideen existieren allerdings noch nicht. GSACA ist aktuell also als Ausgangspunkt für weitere Forschung zu sehen.
 
 \addcontentsline{toc}{section}{Literaturverzeichnis}
 \bibliographystyle{plainnat}
