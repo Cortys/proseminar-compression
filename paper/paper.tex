@@ -81,6 +81,8 @@
 \fancyhead[ER]{\sffamily{Proseminar Datenkompression}\quad\includegraphics[width=0.3cm]{./assets/ubpBlue.pdf}}
 \fancyfoot[EL,OR]{\sffamily{\thepage}}
 
+\hyphenation{GSACA}
+
 \begin{document}
 
 % Titelseite:
@@ -116,9 +118,9 @@
 
 \section{Problemstellung}
 
-Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffixarrays. GSACA wurde 2015 im Rahmen der Masterarbeit~\cite{baierThesis} von Uwe Baier an der Universität Ulm entwickelt. \\
+Diese Proseminar-Arbeit beschreibt den GSACA-Algorithmus. Hierbei handelt es sich um den ersten rekursionsfreien Linearzeitalgorithmus zur Konstruktion von Suffixarrays. \\
 
-Im Folgenden wird zunächst erörtert, was Suffixarrays sind und wozu sie benutzt werden.
+GSACA wurde 2015 im Rahmen der Masterarbeit~\cite{baierThesis} von Uwe Baier an der Universität Ulm entwickelt. Im Folgenden wird zunächst erörtert, was Suffixarrays sind und wozu sie benutzt werden.
 
 \subsection{Was ist ein Suffixarray?}
 
@@ -167,7 +169,7 @@ Da es sich bei der Suffixarray-Berechnung im Wesentlichen um ein Sortierproblem 
 
 Es sind bereits zahlreiche Linearzeitalgorithmen zur Konstruktion von Suffixarrays bekannt. Allerdings sind all diese Verfahren rekursiv. Das bedeutet, dass sie neben der Eingabe und evtl. Hilfsdatenstrukturen zudem mindestens $\mathcal{O}(\log n)$ Speicher für die Stackframes der rekursiven Aufrufe benötigen.\\
 
-Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SAIS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SAIS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bekannten SACAs (suffix array construction algorithms). Obwohl es sich bei beiden um Linearzeitalgorithmen handelt, sind die konstanten Faktoren in Implementationen von SAIS deutlich geringer.
+Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SAIS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SAIS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bisher bekannten SACAs (suffix array construction algorithms). Obwohl sowohl Skew, als auch SAIS ein Linearzeitalgorithmus ist, sind die konstanten Faktoren in Implementationen von SAIS deutlich geringer.
 
 \begin{table}[h]
 \begin{center}
@@ -190,15 +192,16 @@ Im Rest dieser Arbeit wird es um den GSACA-Algorithmus (greedy suffix array cons
 
 \subsection{Grundlegende Konzepte}
 
-Um den GSACA-Algorithmus zu verstehen, ist es hilfreich zuerst eine Intuition dafür zu geben, wieso Suffixe überhaupt in $\mathcal{O}(n)$ sortiert werden können. Im Gegensatz zu allgemeinen Sortierverfahren mit $\mathcal{O}(n \log n)$ Vergleichen, lassen sich hier offenbar Vergleiche sparen.
+Um den GSACA-Algorithmus zu verstehen, ist es hilfreich zuerst eine Intuition dafür zu haben, wieso Suffixe überhaupt in $\mathcal{O}(n)$ sortiert werden können. Im Gegensatz zu allgemeinen Sortierverfahren mit $\mathcal{O}(n \log n)$ Vergleichen, lassen sich hier offenbar Vergleiche sparen.
 
 \subsubsection{Induziertes Sortieren}
 
 Der fundamentale Unterschied zwischen allgemeinen Sortierproblemen und der Suffixsortierung ist, dass aus der Ordnung von bestimmten Suffixen $T(1) <_{lex} \dots <_{lex} T(n)$ die Ordnung anderer Suffixe $G(1), \dots, G(n)$ induziert werden kann. Es muss dann also lediglich Zeit in Vergleiche der $T$-Suffixe investiert werden.
 
 \begin{align*}
+	concat(A, B) :=\ &(A[1], \dots, A[|A|], B[1], \dots, B[|B|]) \\
 	T :=\ &\{ T(1), \dots, T(n) \}, \text{sodass } T(1) <_{lex} \dots <_{lex} T(n) \\
-	G :=\ &\{ G(1), \dots, G(n) \}, \text{sodass } \exists\ P \in \Sigma^*\ \forall\ i: G(i) = P\ T(i) \\
+	G :=\ &\{ G(1), \dots, G(n) \}, \text{sodass } \exists\ P \in \Sigma^*\ \forall\ i: G(i) = concat(P, T(i)) \\
 	\implies &G(1) <_{lex} \dots <_{lex} G(n)
 \end{align*}
 
@@ -273,7 +276,7 @@ Bei der soeben beschriebenen Kontexterweiterung kann nun folgender Fall eintrete
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase1-L.pdf}
-	\caption{Iteration 3 von Phase 1: Doppelte Kontexterweiterung der \textit{L}-Gruppe}
+	\caption{Iteration 3 von Phase 1: Doppelte Kontexterweiterung mit der \textit{L}-Gruppe}
 \label{fig:phase1-L}
 \end{figure}
 
@@ -307,7 +310,7 @@ Konkret iteriert Phase 2, wie schon Phase 1, über alle Suffixe. Diesmal allerdi
 	P_i :=\ & \{ \text{Suffix } S_j: \widehat{j} = SA[i] \} \\
 	=\ & \{ \text{Suffix } S_j: S_j = concat(\text{Gruppenkontext von } S_j,\ S_{SA[i]}) \}
 \end{align*}
-Alle $S_j \in P_i$ werden danach aus ihrer Gruppe $G$ entfernt und vor $G$ eingefügt. Die resultierende Position $k$ von $S_j$ in der Gruppenliste ist die finale Position in $SA$, es kann also $SA[k] \leftarrow j$ gesetzt werden. Dies funktioniert, da die Suffixe von klein nach groß durchlaufen werden. Aus jeder Gruppe mit mehreren Suffixen wird daher zuerst der Suffix nach vorne gestellt, auf dessen Kontext der kleinste Suffix folgt und der somit per Definition von `$<_{lex}$' auch tatsächlich der kleinste Suffix seiner Gruppe ist. \\
+Alle $S_j \in P_i$ werden aus ihrer Gruppe $G_j$ entfernt und vor $G_j$ eingefügt. Die resultierende Position $k$ von $S_j$ in der Gruppenliste ist die finale Position in $SA$, es kann also $SA[k] \leftarrow j$ gesetzt werden. Dies funktioniert, da die Suffixe von klein nach groß durchlaufen werden. Aus jeder Gruppe mit mehreren Suffixen wird daher zuerst der Suffix nach vorne gestellt, auf dessen Kontext der kleinste Suffix folgt und der somit per Definition von `$<_{lex}$' auch tatsächlich der kleinste Suffix seiner Gruppe ist. \\
 
 Es gilt, dass $\widehat{SA[i + 1]} \in \{ SA[j]: j \in \{ 1, \dots, i \} \}$, da der Kontext des $(i + 1)$-ten Suffix nur von einem der kleineren Suffixe terminiert werden kann. Daher muss spätestens nach der $i$-ten Iteration $SA[i + 1]$ gefunden worden sein. Die zuvor definierte Invariante gilt also weiterhin. Nach der $(n - 1)$-ten Iteration müssen daher alle $n$ Suffixe korrekt einsortiert worden sein und $SA$ wurde berechnet.
 
@@ -318,8 +321,7 @@ Es gilt, dass $\widehat{SA[i + 1]} \in \{ SA[j]: j \in \{ 1, \dots, i \} \}$, da
 \label{fig:phase2-1}
 \end{figure}
 
-Die Laufzeit von Phase 2 hängt davon ab, wie schnell die $P_i$-Mengen ermittelt werden können. Die naive Strategie hierzu ist über alle Suffixe $S_j \ \in \{ S_1, \dots, S_{SA[i] - 1} \}$ zu iterieren und auf $\widehat{j} = SA[i]$ zu prüfen. Dafür sind $\mathcal{O}(n)$ notwendig. Da insgesamt $n - 1$ $P_i$-Mengen bestimmt werden müssen, ergibt sich mit der naiven Strategie also eine Laufzeit von $\mathcal{O}(n^2)$. \\
-Wie schon bei der $prev$-Pointer-Berechnung in Phase 1 ist auch hier wieder eine Optimierung notwendig. Es lässt sich zeigen, dass die vorherige Definition von $P_i$ äquivalent ist zu:
+Die Laufzeit von Phase 2 hängt davon ab, wie schnell die $P_i$-Mengen ermittelt werden können. Die naive Strategie hierzu ist über alle Suffixe $S_j \ \in \{ S_1, \dots, S_{SA[i] - 1} \}$ zu iterieren und auf $\widehat{j} = SA[i]$ zu prüfen. Dafür sind $\mathcal{O}(n)$ Schritte notwendig. Da insgesamt $n - 1$ $P_i$-Mengen bestimmt werden müssen, ergibt sich mit der naiven Strategie also eine Laufzeit von $\mathcal{O}(n^2)$. Wie schon bei der $prev$-Pointer-Berechnung in Phase 1 ist auch hier wieder eine Optimierung notwendig. Es lässt sich zeigen, dass die vorherige Definition von $P_i$ äquivalent ist zu:
 \begin{align*}
 	P_i &:= \pi(SA[i] - 1) \\
 	\pi(j) &:= \begin{cases}
@@ -349,7 +351,7 @@ Es werden also alle alle Suffixe in $P_i$ aufgenommen, die auf der $prev$-Pointe
 	\item Falls beim Iterieren über die $prev$-Pointer-Kette ein Suffix $S_j$ erreicht wird, der bereits in $SA$ einsortiert wurde, kann dieser und alle noch in der Kette folgenden Suffixe unmöglich in $P_i$ liegen. Offensichtlich gilt, dass $S_j \notin P_i$, da auf den Kontext von $S_j$ ein anderer Suffix $S_l <_{lex} S_{SA[i]}$ folgen muss, sonst wäre $S_j$ nicht bereits einsortiert worden. Durch einen Widerspruchsbeweis lässt sich zeigen, dass alle Suffixe vor $S_j$ ebenfalls nicht in $P_i$ enthalten sein können. Der Beweis wird hier ausgelassen.
 \end{enumerate}
 
-Da jedem Suffix höchstens einmal entlang einer $prev$-Pointer-Kette gefolgt wird – danach wird er schließlich in $SA$ einsortiert und beendet ab dann weitere $prev$-Pointer-Ketten – und es $n$ Suffixe gibt, werden in Phase 2 für das Berechnen der $P_i$-Mengen also insgesamt $\mathcal{O}(n)$ Schritte benötigt. Beide Phasen laufen somit in Linearzeit, was GSACA zu einem rekursionsfreien Linearzeit-Suffix-Sorting-Algorithmus macht.
+Nachdem einem Suffix entlang einer $prev$-Pointer-Kette gefolgt wurde, wird er in $SA$ einsortiert. Ab dann wird dieser Suffix nicht mehr in andere Ketten aufgenommen. Da jedem Suffix zur $P_i$-Berechnung also höchstens einmal gefolgt wird und es $n$ Suffixe gibt, werden in Phase 2 für das Berechnen der $P_i$-Mengen also insgesamt $\mathcal{O}(n)$ Schritte benötigt. Beide Phasen laufen somit in Linearzeit, was GSACA zu einem rekursionsfreien Linearzeit-Suffix-Sorting-Algorithmus macht.
 
 \begin{figure}[h]
 	\centering
@@ -360,9 +362,9 @@ Da jedem Suffix höchstens einmal entlang einer $prev$-Pointer-Kette gefolgt wir
 
 \section{Performanceanalyse}
 
-Nachdem nun erklärt wurde, die GSACA funktioniert, wird im Folgenden die Performance mit anderen SACAs verglichen.
+Nachdem nun erklärt wurde, wie GSACA funktioniert, wird im Folgenden die Performance mit anderen SACAs verglichen.
 
-\paragraph{Speicherbedarf} In der GSACA-Referenzimplementation~\cite{gsacaImplementation}, die im Rahmen der ursprünglichen Masterarbeit entstanden ist, wird, zusätzlich zum Speicher für Eingabe und Ausgabearray, $12n$ Speicher benötigt. Die rekursionsfreie Natur von GSACA bringt im Vergleich zu z.~B. SAIS aktuell also keinen Speichervorteil.
+\paragraph{Speicherbedarf} In der GSACA-Referenzimplementation~\cite{gsacaImplementation}, die im Rahmen der ursprünglichen Masterarbeit entstanden ist, wird zusätzlich zum Speicher für Eingabe und Ausgabearray $12n$ Speicher benötigt. Die rekursionsfreie Natur von GSACA bringt im Vergleich zu z.~B. SAIS aktuell also keinen Speichervorteil.
 
 \begin{table}[h]
 \begin{center}
@@ -378,9 +380,11 @@ Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{
 \label{tab:skewSaisGsacaComparison2}
 \end{center}
 \end{table}
-\paragraph{Geschwindigkeit} Wie Abbildung~\ref{fig:performance} zeigt, kann GSACA aktuell auch im Hinblick auf seine Sortiergeschwindigkeit noch nicht mit dem state of the art SAIS Verfahren mithalten. Dies liegt zum einen daran, dass die Implementationen von SAIS im Laufe der letzten Jahre stärker optimiert werden konnten. Da GSACA noch ein sehr junges Verfahren ist, wurde noch nicht genug Zeit in das Finden einer bestmöglichen Implementation investiert. Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das viele nicht-lokale Springen zwischen Suffixen, z.~B. beim Pointer-Jumping, viele Cache-Misses produziert werden.
+\paragraph{Geschwindigkeit} Wie Abbildung~\ref{fig:performance} zeigt, kann GSACA aktuell auch im Hinblick auf seine Sortiergeschwindigkeit noch nicht mit dem state of the art SAIS Verfahren mithalten. Dies liegt zum einen daran, dass die Implementationen von SAIS im Laufe der letzten Jahre stärker optimiert werden konnten. Da GSACA noch ein sehr junges Verfahren ist, wurde noch nicht genug Zeit in das Finden einer bestmöglichen Implementation investiert.\\
 
-\begin{figure}[h]
+Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das viele nicht-lokale Springen zwischen Suffixen, z.~B. beim Pointer-Jumping, viele Cache-Misses produziert werden.
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\linewidth,bb=0 0 830 495]{./assets/performance.pdf}
 	\caption{Geschwindingkeit von GSACA im Vergleich, Testdaten: Silesia Corpus}
