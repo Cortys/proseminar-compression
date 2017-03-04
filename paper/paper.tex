@@ -2,7 +2,6 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[ngerman]{babel}
 \usepackage[all]{nowidow}
 \usepackage{graphicx,curves,float,rotating}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
@@ -16,6 +15,7 @@
 \usepackage{sectsty}
 \usepackage[light]{roboto}
 \usepackage[round, sort, numbers]{natbib}
+\usepackage[ngerman]{babel}
 
 \newcommand{\Frac}[2]{\frac{\displaystyle #1}{\displaystyle #2}}
 \newlength{\textwd}
@@ -77,7 +77,7 @@
 % Header:
 \fancyhf{}
 \fancyhead[OR,EL]{\nouppercase{\sffamily{\firstleftmark}}}
-\fancyhead[OL]{\includegraphics[width=0.3cm]{./assets/ubpBlue.pdf}\quad\sffamily{Proseminar Datenkompression}}
+\fancyhead[OL]{\includegraphics[width=0.3cm]{./assets/ubpBlue.pdf}\quad\sffamily{Linear-Time Suffix-Sorting}}
 \fancyhead[ER]{\sffamily{Proseminar Datenkompression}\quad\includegraphics[width=0.3cm]{./assets/ubpBlue.pdf}}
 \fancyfoot[EL,OR]{\sffamily{\thepage}}
 
@@ -163,13 +163,13 @@ Nachdem nun der Begriff des Suffixarrays definiert wurde, wird im Folgenden betr
 
 \subsection{Naiver Ansatz}
 
-Da es sich bei der Suffixarray-Berechnung im Wesentlichen um ein Sortierproblem handelt, liegt die Idee nahe dies mit einem allgemeinen Sortierverfahren zu lösen. Dazu bietet sich z.~B. der Quicksort-Algorithmus an. Im Average-Case wären dann $\mathcal{O}(n \log n)$ Vergleiche notwendig. Für den lexiographischen Vergleich zweier Suffixe müssen wiederum bis zu $\mathcal{O}(n)$ Zeichen miteinander verglichen werden. Insgesamt ergibt sich also eine Laufzeit von $\mathcal{O}(n^2 \log n)$. Dies ist weit von der angestrebten $\mathcal{O}(n)$-Laufzeit entfernt. Allgemeine Sortierverfahren sind daher für die Suffixarray-Konstruktion unbrauchbar.
+Da es sich bei der Suffixarray-Berechnung im Wesentlichen um ein Sortierproblem handelt, liegt die Idee nahe, dies mit einem allgemeinen Sortierverfahren zu lösen. Dazu bietet sich z.~B. der Quicksort-Algorithmus an. Im Average-Case wären dann $\mathcal{O}(n \log n)$ Vergleiche notwendig. Für den lexiographischen Vergleich zweier Suffixe müssen wiederum bis zu $\mathcal{O}(n)$ Zeichen miteinander verglichen werden. Insgesamt ergibt sich also eine Laufzeit von $\mathcal{O}(n^2 \log n)$. Dies ist weit von der angestrebten $\mathcal{O}(n)$-Laufzeit entfernt. Allgemeine Sortierverfahren sind daher für die Suffixarray-Konstruktion unbrauchbar.
 
 \subsection{Überblick über bisherige Linearzeitansätze}
 
 Es sind bereits zahlreiche Linearzeitalgorithmen zur Konstruktion von Suffixarrays bekannt. Allerdings sind all diese Verfahren rekursiv. Das bedeutet, dass sie neben der Eingabe und evtl. Hilfsdatenstrukturen zudem mindestens $\mathcal{O}(\log n)$ Speicher für die Stackframes der rekursiven Aufrufe benötigen.\\
 
-Zwei dieser rekursiven Linearzeitalgorithmen sind der Algorithmus von Skew und der SAIS-Algorithmus. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SAIS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bisher bekannten SACAs (suffix array construction algorithms). Obwohl sowohl Skew als auch SAIS ein Linearzeitalgorithmen sind, sind die konstanten Faktoren in Implementationen von SAIS deutlich geringer.
+Zwei dieser rekursiven Linearzeitalgorithmen sind der Skew-Algorithmus~\cite{skew} und der SAIS-Algorithmus~\cite{sais}. Skew ist primär wegen seiner Kompaktheit und Eleganz interessant. SAIS basiert auf dem Konzept der induzierten Sortierung und gehört zu den schnellsten bisher bekannten SACAs (suffix array construction algorithms). Obwohl sowohl Skew als auch SAIS Linearzeitalgorithmen sind, sind die konstanten Faktoren in Implementationen von SAIS deutlich geringer.
 
 \begin{table}[h]
 \begin{center}
@@ -344,7 +344,7 @@ Die Laufzeit von Phase 2 hängt davon ab, wie schnell die $P_i$-Mengen ermittelt
 \label{fig:phase2-4}
 \end{figure}
 
-Es werden also alle alle Suffixe in $P_i$ aufgenommen, die auf der $prev$-Pointer-Kette liegen, die bei $S_{SA[i] - 1}$ beginnt, bis auf dieser Kette ein bereits einsortierter Suffix erreicht wird. Eine Intuition für die Korrektheit dieser Definition liefern diese zwei Überlegungen:
+Es werden also alle Suffixe in $P_i$ aufgenommen, die auf der $prev$-Pointer-Kette liegen, die bei $S_{SA[i] - 1}$ beginnt, bis auf dieser Kette ein bereits einsortierter Suffix erreicht wird. Eine Intuition für die Korrektheit dieser Definition liefern diese zwei Überlegungen:
 
 \begin{enumerate}
 	\item Für $S_j \in P_i$ gilt, dass alle Suffixe zwischen $prev(j)$ und $j$ unmöglich in $P_i$ sein können, denn: $$\forall\ k \in \{ prev(j) + 1, \dots, j - 1 \}: S_j <_{lex} S_k \implies \widehat{k} \le j < \widehat{j} = i \implies S_k \notin P_i$$
@@ -380,14 +380,14 @@ Speicher & $\textcolor{rot}{\mathcal{O}(\log n)} + \max 24n$ & $\textcolor{rot}{
 \label{tab:skewSaisGsacaComparison2}
 \end{center}
 \end{table}
-\paragraph{Geschwindigkeit} Wie Abbildung~\ref{fig:performance} zeigt, kann GSACA aktuell auch im Hinblick auf seine Sortiergeschwindigkeit noch nicht mit dem state of the art SAIS Verfahren mithalten. Dies liegt zum einen daran, dass die Implementationen von SAIS im Laufe der letzten Jahre stärker optimiert werden konnten. Da GSACA noch ein sehr junges Verfahren ist, wurde noch nicht genug Zeit in das Finden einer bestmöglichen Implementation investiert.\\
+\paragraph{Geschwindigkeit} Wie Abbildung~\ref{fig:performance} zeigt, kann GSACA aktuell auch im Hinblick auf seine Sortiergeschwindigkeit noch nicht mit dem state-of-the-art SAIS Verfahren mithalten. Dies liegt zum einen daran, dass die Implementationen von SAIS im Laufe der letzten Jahre stärker optimiert werden konnten. Da GSACA noch ein sehr junges Verfahren ist, wurde noch nicht genug Zeit in das Finden einer bestmöglichen Implementation investiert.\\
 
 Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das viele nicht-lokale Springen zwischen Suffixen, z.~B. beim Pointer-Jumping, viele Cache-Misses produziert werden.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\linewidth,bb=0 0 830 495]{./assets/performance.pdf}
-	\caption{Geschwindingkeit von GSACA im Vergleich, Testdaten: Silesia Corpus}
+	\caption{Geschwindingkeit von GSACA im Vergleich, Testdaten: Silesia Corpus~\cite{silesiaCorpus}}
 \label{fig:performance}
 \end{figure}
 
@@ -395,10 +395,10 @@ Die Testergebnisse stammen aus der ursprünglichen GSACA-Masterarbeit~\cite{baie
 
 \section{Fazit}
 
-Wie soeben in der Performanceanalyse gezeigt, ist GSACA aktuell noch nicht praxistauglich. Dies liegt allerdings vielmehr an der Neuheit des Verfahrens, als an der fundamentalen Untauglichkeit der verwendeten Ideen. Im Rahmen zukünftiger Forschung könnte beispielsweise versucht werden durch eine Stack-basierte Organisation der Daten das erwähnte Cache-Miss-Problem zu lösen. Dies bietet sich an, da wegen der $prev$-Pointer und der $\widehat{i}$ basierten Kontexte viel mit vorher/nachher-Relationen gearbeitet wird. Detaillierte Verbesserungsideen existieren allerdings noch nicht. GSACA ist aktuell also als Ausgangspunkt für weitere Forschung zu sehen.
+Wie soeben in der Performanceanalyse gezeigt, ist GSACA aktuell noch nicht praxistauglich. Dies liegt allerdings mehr an der Neuheit des Verfahrens, als an der fundamentalen Untauglichkeit der verwendeten Ideen. Im Rahmen zukünftiger Forschung könnte beispielsweise versucht werden durch eine Stack-basierte Organisation der Daten das erwähnte Cache-Miss-Problem zu lösen. Dies bietet sich an, da wegen der $prev$-Pointer und der $\widehat{i}$ basierten Kontexte viel mit vorher/nachher-Relationen gearbeitet wird. Detaillierte Verbesserungsideen existieren allerdings noch nicht. GSACA ist aktuell also als Ausgangspunkt für weitere Forschung zu sehen.
 
 \addcontentsline{toc}{section}{Literaturverzeichnis}
-\bibliographystyle{plainnat}
+\bibliographystyle{unsrtnat}
 \bibliography{paper}
 
 \end{document}
