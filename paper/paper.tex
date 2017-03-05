@@ -14,8 +14,9 @@
 \usepackage{extramarks}
 \usepackage{sectsty}
 \usepackage[light]{roboto}
-\usepackage[round, sort, numbers]{natbib}
+\usepackage[sort, numbers]{natbib}
 \usepackage[ngerman]{babel}
+\usepackage[skip=18pt, position=bottom, labelfont=sf]{caption}
 
 \newcommand{\Frac}[2]{\frac{\displaystyle #1}{\displaystyle #2}}
 \newlength{\textwd}
@@ -297,7 +298,7 @@ Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Grupp
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\linewidth,bb=0 0 640 67]{./assets/phase1Result.pdf}
-	\caption{Ergebnis von Phase 1: Alle Suffixe sind gemäß ihrer Kontexte gruppiert und sortiert}
+	\caption{Ergebnis von Phase 1: Alle Suffixe gemäß ihrer Kontexte gruppiert und sortiert}
 \label{fig:phase1Result}
 \end{figure}
 
@@ -330,14 +331,14 @@ Die Laufzeit von Phase 2 hängt davon ab, wie schnell die $P_i$-Mengen ermittelt
 		\emptyset: & \text{sonst}
 	\end{cases}
 \end{align*}
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase2-2.pdf}
 	\caption{Iteration 2 von Phase 2: Berechnung und Einsortierung der $P_2$-Menge}
 \label{fig:phase2-2}
 \end{figure}
 \hline
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth,bb=0 0 1310 386]{./assets/phase2-4.pdf}
 	\caption{Iteration 4 von Phase 2: Berechnung und Einsortierung der $P_4$-Menge}
@@ -356,7 +357,7 @@ Nachdem einem Suffix entlang einer $prev$-Pointer-Kette gefolgt wurde, wird er i
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.6\linewidth,bb=0 0 715 67]{./assets/phase2Result.pdf}
-	\caption{Ergebnis von Phase 2: Das Suffixarray $SA$ für $S =$ `parallel'}
+	\caption{Ergebnis von Phase 2: Das Suffixarray $SA$ für $S =$ `parallel\$'}
 \label{fig:phase2Result}
 \end{figure}
 
@@ -386,7 +387,7 @@ Ein weiterer Grund für das schlechte Abschneiden von GSACA ist, dass durch das 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.6\linewidth,bb=0 0 830 495]{./assets/performance.pdf}
+	\includegraphics[width=0.7\linewidth,bb=0 0 830 495]{./assets/performance.pdf}
 	\caption{Geschwindingkeit von GSACA im Vergleich, Testdaten: Silesia Corpus~\cite{silesiaCorpus}}
 \label{fig:performance}
 \end{figure}
