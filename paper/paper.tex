@@ -259,7 +259,7 @@ Konkret bedeutet dies, dass der Kontext jedes Suffixes $S_i$ zu Beginn auf $S[i]
 \label{fig:bucketsort}
 \end{figure}
 
-Manche der sich ergebenden Gruppen müssen nun durch sogenannte \textit{Kontexterweiterungen} aufgespalten werden. Dies geschieht indem von hinten nach vorne, i.~e.\ von großem zu kleinem Kontext, über die Gruppen iteriert wird. Für jeden Suffix der aktuell iterierten Gruppe wird nun der sog. $prev$-Pointer berechnet.
+Manche der sich ergebenden Gruppen müssen nun durch sogenannte \textit{Kontexterweiterungen} aufgespalten werden. Dies geschieht indem von hinten nach vorne, i.~e.\ von großem zu kleinem Kontext, über die Gruppen iteriert wird. Für jeden Suffix der aktuell iterierten Gruppe wird dabei der sogenannte $prev$-Pointer berechnet.
 $$prev(i) := \max \{ j \in \{ 1, \dots, i \}: \text{akt. Gruppenkontext } S_j <_{lex} \text{akt. Gruppenkontext } S_i \}$$
 $prev(i)$ ist verwandt mit der $\widehat{i}$-Funktion. Statt des \textit{nächst kleineren} Suffix, gibt $prev$ allerdings den ersten \textit{vorherigen} Suffix aus einer Gruppe mit \textit{kleinerem aktuellen Kontext} zurück. Aus dieser Verwandtschaft folgt, dass $j = prev(i) < i < \widehat{i} \le \widehat{j}$ gilt. Das bedeutet, dass der Gruppenkontext von $S_i$ Teil des Gruppenkontextes von $S_{prev(i)}$ ist. Es lässt sich zeigen, dass durch das Iterieren von großen zu kleinen Gruppen in jeder Iteration für jeden Suffix $S_i$ der gerade iterierten Gruppe gilt:
 $$concat(\text{aktueller Kontext } S_{prev(i)},\ \text{aktueller Kontext } S_i) \sqsubseteq \text{Gruppenkontext } S_{prev(i)}$$
@@ -294,7 +294,7 @@ Es wird also der Kette der $prev$-Pointer ab Suffix $S_{i - 1}$ gefolgt, bis dar
 \label{fig:phase1-EL}
 \end{figure}
 
-Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Gruppeniteration von Phase 1 von $\mathcal{O}(n^2)$ auf $\mathcal{O}(n)$ reduziert werden. Dies liegt daran, dass jeder $prev$-Pointer nur höchstens einmal für einen Pointer-Jump benutzt wird. Insgesamt können also höchstens $n$ Pointer-Jumps stattfinden. Der Beweis wird hier ausgelassen.
+Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Gruppeniterationen von Phase 1 von $\mathcal{O}(n^2)$ auf $\mathcal{O}(n)$ reduziert werden. Dies liegt daran, dass jeder $prev$-Pointer nur höchstens einmal für einen Pointer-Jump benutzt wird. Insgesamt können also höchstens $n$ Pointer-Jumps stattfinden. Der Beweis wird hier ausgelassen.
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\linewidth,bb=0 0 640 67]{./assets/phase1Result.pdf}
@@ -306,7 +306,7 @@ Durch das Pointer-Jumping können die $prev$-Pointer-Gesamtkosten in allen Grupp
 
 \paragraph{Intuition} In Phase 2 müssen die Suffixe nun innerhalb ihrer Gruppen geordnet werden. Hierzu wird zuerst das erste Element des gesuchten Suffixarrays bestimmt. Da die Gruppenkontexte geschickt definiert wurden, ermöglicht dies das Induzieren des zweiten Elements des Suffixarrays, woraus wiederum die Position des dritten Elements folgt, usw. \\
 
-Konkret iteriert Phase 2, wie schon Phase 1, über alle Suffixe. Diesmal allerdings nicht von hinten nach vorne, sondern von vorne nach hinten, von den Suffixen der lexiographisch kleinsten Gruppe zu den Suffixen der größten Gruppe. \textit{Vor} jeder Iteration $i \in \{ 1, \dots, n \}$ gilt dabei die Invariante, dass die ersten $i$-Suffixe bereits an ihre finale Position im Suffixarray $SA$ einsortiert wurden. Für die erste Iteration $i = 1$ gilt dies, da GSACA per Definiton eine nullterminierte Eingabe erwartet und daher immer $SA[1] = \$$. \textit{Während} der $i$-ten Iteration wird zuerst die Suffixmenge $P_i$ berechnet.
+Konkret iteriert Phase 2, wie schon Phase 1, über alle Suffixe. Diesmal allerdings nicht von hinten nach vorne, sondern von vorne nach hinten, von den Suffixen der lexiographisch kleinsten Gruppe zu den Suffixen der größten Gruppe. \textit{Vor} jeder Iteration $i \in \{ 1, \dots, n \}$ gilt dabei die Invariante, dass die ersten $i$ Suffixe bereits an ihre finale Position im Suffixarray $SA$ einsortiert wurden. Für die erste Iteration $i = 1$ gilt dies, da GSACA per Definiton eine nullterminierte Eingabe erwartet und daher immer $SA[1] = \$$. \textit{Während} der $i$-ten Iteration wird zuerst die Suffixmenge $P_i$ berechnet.
 \begin{align*}
 	P_i :=\ & \{ \text{Suffix } S_j: \widehat{j} = SA[i] \} \\
 	=\ & \{ \text{Suffix } S_j: S_j = concat(\text{Gruppenkontext von } S_j,\ S_{SA[i]}) \}
